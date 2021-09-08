@@ -1,0 +1,60 @@
+import discord 
+import os 
+from discord.ext import commands
+from dotenv import load_dotenv
+import random
+from keep_alive import keep_alive
+
+keep_alive()  #connects to web server to keep bot alive when tab is closed/computer's off, etc
+
+client = commands.Bot(command_prefix = "AD#")
+eventCodes = ['code1',  	 
+'code2',	
+'code3',	
+'etc',		
+'',
+'',	
+'']
+
+
+
+@client.event
+async def on_ready():
+  print('We have logged in as {0.user}'.format(client))
+
+@client.event  
+async def on_message(message):  
+
+  if message.content == "AD# help":
+    await message.channel.send(message.author.name + ", a list of commands has been sent to your Direct Messages.")
+    embed=discord.Embed(title="Amazing Bot Commands", description="Here is a list of valid commands for Amazing Bot!",color=0x109319)
+    embed.add_field(name="AD# MM", value="Type AD# MM and hit enter, then post your screenshot to receive a code!", inline=False)
+    embed.add_field(name="AD# help", value="Sends list of commands, just like this one!", inline=False)
+    await message.author.send(embed=embed)
+    """Messages embedded list of commands to user that requested it."""
+
+  if message.content == "AD# MM":
+      if len(eventCodes) == 0:  
+        await message.channel.send("We're tapped out of codes! Wait until the next turn, when Wizards of the Coast replenishes us. Check back next week!")
+      elif len(eventCodes) > 0:
+        await message.channel.send(message.author.name + ", please post your screenshot!")
+        discUser = message.author
+
+        msg = await client.wait_for("message")
+        if msg.attachments and message.author is discUser:
+          randomNumber = random.randint(0,6)  #  range is however many codes are present on the bot at any given time
+          codeToDistribute = eventCodes[randomNumber]
+          with open('EventCodes.txt', "r") as file:
+            if codeToDistribute in file.read():   
+                randomNumber = random.randint(0,6)
+                codeToDistribute = eventCodes[randomNumber]
+          await message.channel.send(message.author.name + ", check your Direct Messages for your code!")
+          await message.author.send(message.author.name + ", your code is " + codeToDistribute)
+          await message.author.send("If this code doesn't work, please message moderator jocelyn(jocelyn#8368) a screenshot of the code failure screen, and a new code will be sent as soon as possible! Thank you for your patience, GLHF! :-)")
+          with open('EventCodes.txt', 'a') as file:
+            file.write(codeToDistribute)
+            file.write("\n")
+          file.close()  
+        else:
+            await message.channel.send("No screenshot detected, sorry! Please try again using the AD# MM command.")
+client.run('TOKEN')
